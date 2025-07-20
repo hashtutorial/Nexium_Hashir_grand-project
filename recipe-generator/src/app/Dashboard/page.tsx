@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,13 +18,13 @@ import {
   ChefHat,
   Clock,
   Users,
-  TrendingUp,
-  Star,
   Zap,
   Plus,
   Sparkles,
   Globe,
   LogOut,
+  Heart,
+  Utensils,
   X
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -69,39 +69,29 @@ const quickAddItems = [
   },
 ];
 
-const recipeStats = [
-  { icon: Clock, label: 'Avg Cook Time', value: '25 min', color: 'text-blue-500' },
-  { icon: Users, label: 'Serves', value: '2-4', color: 'text-green-500' },
-  { icon: TrendingUp, label: 'Success Rate', value: '94%', color: 'text-orange-500' },
-  { icon: Star, label: 'Avg Rating', value: '4.8/5', color: 'text-yellow-500' },
-];
-
-const cuisineOptions = ['Desi', 'Continental', 'Asian', 'Mexican', 'Italian', 'Middle Eastern'];
+const cuisineOptions = ['Desi', 'Continental', 'Asian', 'Mexican', 'Italian', 'Middle Eastern','Mediterranean', 'Chinese', 'American', 'japanese', 'Korean', 'Thai', 'French', 'Spanish', 'Indian'];
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [ingredientInput, setIngredientInput] = useState('');
   const [pantry, setPantry] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showStats, setShowStats] = useState(false);
+  
   const supabase = createClientComponentClient();
   const router = useRouter();
   const [preference, setPreference] = useState('');
   const [fusionEnabled, setFusionEnabled] = useState(false);
   const [fusionCuisine, setFusionCuisine] = useState('');
+  const [nutritionEnabled, setNutritionEnabled] = useState(false);
+  const [recipe, setRecipe] = useState('');
+  const [error, setError] = useState('');
 
   const availableFusionOptions = cuisineOptions.filter(cuisine => cuisine !== preference);
 
   const handleSignOut = async () => {
   await supabase.auth.signOut();
-  router.push('/signin'); 
+  router.push('/'); 
 };
-
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowStats(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleAddIngredient = () => {
     const trimmed = ingredientInput.trim();
@@ -121,10 +111,239 @@ export default function DashboardPage() {
     setPantry((prev) => prev.filter((i) => i !== item));
   };
 
-const handleGenerateRecipe = () => {
-    setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 3000);
-  };
+const handleGenerateRecipe = async () => {
+  if (pantry.length === 0) {
+    setError('Please add some ingredients to your pantry');
+    return;
+  }
+  
+  setIsGenerating(true);
+  setError('');
+  setRecipe('');
+  
+  try {
+    // Build the input string based on user selections
+    let input = `Ingredients: ${pantry.join(', ')}.`;
+    
+    if (preference) {
+      input += ` Preference of cuisine: ${preference}.`;
+    }
+    
+    if (fusionEnabled && fusionCuisine) {
+      input += ` Fuse with: ${fusionCuisine}.`;
+    } else {
+      input += ` Fuse with: none.`;
+    }
+    
+    if (nutritionEnabled) {
+      input += ` Include detailed nutritional information.`;
+    }
+    
+    const response = await fetch('/api/generate-recipe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ input }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to generate recipe');
+    }
+    
+    const data = await response.json();
+    setRecipe(data.recipe);
+  } catch (err) {
+    setError('Failed to generate recipe. Please try again.');
+    console.error('Error:', err);
+  } finally {
+    setIsGenerating(false);
+  }
+};
+
+const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
+  if (!recipeText) return null;
+
+  const recipes = recipeText.split(/Recipe \d+:/).filter(Boolean);
+
+  return recipes.map((recipe, index) => {
+    const lines = recipe.trim().split('\n');
+    const title = lines[0];
+
+    let currentSection: 'ingredients' | 'instructions' | 'servingInfo' | 'nutritionalInfo' | '' = '';
+
+    const sections: {
+      ingredients: string[];
+      instructions: string[];
+      servingInfo: string[];
+      nutritionalInfo: string[];
+    } = {
+      ingredients: [],
+      instructions: [],
+      servingInfo: [],
+      nutritionalInfo: []
+    };
+
+    lines.slice(1).forEach(line => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return;
+
+      if (trimmedLine.toLowerCase().includes('ingredients:')) {
+        currentSection = 'ingredients';
+        return;
+      }
+      if (trimmedLine.toLowerCase().includes('instructions:')) {
+        currentSection = 'instructions';
+        return;
+      }
+      if (trimmedLine.toLowerCase().includes('estimated serving') || trimmedLine.toLowerCase().includes('serves')) {
+        currentSection = 'servingInfo';
+      }
+      if (
+        trimmedLine.toLowerCase().includes('nutritional') ||
+        trimmedLine.toLowerCase().includes('calories') ||
+        trimmedLine.toLowerCase().includes('protein:') ||
+        trimmedLine.toLowerCase().includes('carbs:')
+      ) {
+        currentSection = 'nutritionalInfo';
+      }
+
+      if (currentSection === 'ingredients' && trimmedLine.startsWith('*')) {
+        sections.ingredients.push(trimmedLine.substring(1).trim());
+      } else if (currentSection === 'instructions' && /^\d+\./.test(trimmedLine)) {
+        sections.instructions.push(trimmedLine);
+      } else if (
+        currentSection === 'servingInfo' &&
+        (trimmedLine.toLowerCase().includes('serving') || trimmedLine.toLowerCase().includes('serves'))
+      ) {
+        sections.servingInfo.push(trimmedLine);
+      } else if (currentSection === 'nutritionalInfo' && nutritionEnabled) {
+        sections.nutritionalInfo.push(trimmedLine);
+      }
+    });
+ return (
+      <motion.div 
+        key={index} 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-8 mb-8 hover:shadow-2xl transition-all duration-500"
+      >
+        <div className="flex items-center mb-6">
+          <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-4">
+            <ChefHat className="text-white w-6 h-6" />
+          </div>
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            {title}
+          </h3>
+        </div>
+        
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Ingredients Section */}
+          <div className="space-y-4">
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg mr-3">
+                <Utensils className="text-white w-5 h-5" />
+              </div>
+              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Ingredients</h4>
+            </div>
+            <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 backdrop-blur-sm">
+              <ul className="space-y-2">
+                {sections.ingredients.map((ingredient, i) => (
+                  <motion.li 
+                    key={i} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="text-slate-600 dark:text-slate-400 flex items-start text-sm leading-relaxed"
+                  >
+                    <span className="text-green-500 mr-3 font-bold">•</span>
+                    {ingredient}
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          
+          {/* Instructions Section */}
+          <div className="space-y-4">
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mr-3">
+                <Clock className="text-white w-5 h-5" />
+              </div>
+              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Instructions</h4>
+            </div>
+            <div className="bg-gradient-to-r from-blue-50/80 to-cyan-50/80 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 backdrop-blur-sm">
+              <ol className="space-y-3">
+                {sections.instructions.map((instruction, i) => (
+                  <motion.li 
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed"
+                  >
+                    {instruction}
+                  </motion.li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </div>
+        
+        {/* Serving Info */}
+        {sections.servingInfo.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center justify-center">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
+                <Users className="text-white w-4 h-4" />
+              </div>
+              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                {sections.servingInfo.map((info, i) => (
+                  <span key={i}>{info}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Nutritional Information - Only show if nutritionEnabled is true */}
+        {nutritionEnabled && sections.nutritionalInfo.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-6 pt-6 border-t border-slate-200/50 dark:border-slate-700/50"
+          >
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg mr-3">
+                <Heart className="text-white w-5 h-5" />
+              </div>
+              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Nutritional Information</h4>
+            </div>
+            <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 backdrop-blur-sm">
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {sections.nutritionalInfo.map((info, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="bg-white/60 dark:bg-slate-700/60 rounded-lg p-3 text-center backdrop-blur-sm"
+                  >
+                    <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                      {info}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    );
+  });
+};
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 text-foreground overflow-hidden relative">
@@ -514,6 +733,51 @@ const handleGenerateRecipe = () => {
       </AnimatePresence>
     </div>
   </motion.div>
+
+{/* Nutritional Info Section */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 1.0 }}
+  className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
+>
+  <div className="flex items-center justify-center gap-3 mb-4">
+    <motion.div 
+      animate={nutritionEnabled ? { scale: [1, 1.1, 1] } : {}}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg"
+    >
+      <Heart className="w-5 h-5 text-white" />
+    </motion.div>
+    <Label className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+      Nutritional Info
+    </Label>
+  </div>
+
+  <div className="space-y-4">
+    {/* Nutrition Toggle */}
+    <div className="flex items-center justify-center gap-3">
+      <Label 
+        htmlFor="nutrition-toggle" 
+        className="text-slate-600 dark:text-slate-400 font-medium"
+      >
+        Include nutritional information
+      </Label>
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Switch
+          id="nutrition-toggle"
+          checked={nutritionEnabled}
+          onCheckedChange={setNutritionEnabled}
+          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-green-500 data-[state=checked]:to-emerald-500"
+        />
+      </motion.div>
+    </div>
+  </div>
+</motion.div>
+
 </div>
 
           {/* Generate Button */}
@@ -558,7 +822,53 @@ const handleGenerateRecipe = () => {
       </CardContent>
     </Card>
         </motion.div>
-      </main>
+      {error && (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="max-w-4xl mx-auto mt-6"
+  >
+    <div className="bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-700/50 text-red-700 dark:text-red-400 px-6 py-4 rounded-2xl backdrop-blur-sm text-center">
+      <div className="flex items-center justify-center gap-2">
+        <X className="w-5 h-5" />
+        <span className="font-medium">{error}</span>
+      </div>
+    </div>
+  </motion.div>
+)}
+{recipe && (
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: 0.2 }}
+    className="max-w-6xl mx-auto mt-12"
+  >
+    <div className="text-center mb-8">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-center justify-center gap-3 mb-4"
+      >
+        <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full">
+          <Sparkles className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+          Your Custom Recipe
+        </h2>
+      </motion.div>
+      <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+        Crafted specifically with your ingredients and preferences in mind!
+      </p>
+    </div>
+    
+    <div className="space-y-8">
+      {formatRecipe(recipe,nutritionEnabled)}
+    </div>
+  </motion.div>
+)}
+    </main>
     </div>
   );
 }
+
