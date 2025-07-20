@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,8 @@ const categoryColors = {
   'Other': 'from-indigo-500 to-blue-500'
 };
 
-export default function ShoppingPage() {
+// Create a separate component for the shopping content
+function ShoppingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [shoppingList, setShoppingList] = useState<ShoppingItem[]>([]);
@@ -386,5 +387,27 @@ export default function ShoppingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for suspense fallback
+function ShoppingPageLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-slate-600 dark:text-slate-400">Loading your shopping list...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ShoppingPage() {
+  return (
+    <Suspense fallback={<ShoppingPageLoading />}>
+      <ShoppingContent />
+    </Suspense>
   );
 }
