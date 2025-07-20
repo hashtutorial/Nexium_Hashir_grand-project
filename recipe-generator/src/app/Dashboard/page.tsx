@@ -25,6 +25,8 @@ import {
   LogOut,
   Heart,
   Utensils,
+  ShoppingCart,
+  Languages,
   X
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -76,7 +78,7 @@ export default function DashboardPage() {
   const [ingredientInput, setIngredientInput] = useState('');
   const [pantry, setPantry] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  
+  const [surpriseMode, setSurpriseMode] = useState(false);
   const supabase = createClientComponentClient();
   const router = useRouter();
   const [preference, setPreference] = useState('');
@@ -85,6 +87,11 @@ export default function DashboardPage() {
   const [nutritionEnabled, setNutritionEnabled] = useState(false);
   const [recipe, setRecipe] = useState('');
   const [error, setError] = useState('');
+  const [recipeTranslations, setRecipeTranslations] = useState<{[key: string]: string | null}>({});
+  const [translatingRecipes, setTranslatingRecipes] = useState<{[key: string]: boolean}>({});
+  const [showOriginalStates, setShowOriginalStates] = useState<boolean[]>([]);
+
+  const [currentRecipeIngredients, setCurrentRecipeIngredients] = useState<string[]>([]);
 
   const availableFusionOptions = cuisineOptions.filter(cuisine => cuisine !== preference);
 
@@ -112,23 +119,23 @@ export default function DashboardPage() {
   };
 
 const handleGenerateRecipe = async () => {
-  if (pantry.length === 0) {
-    setError('Please add some ingredients to your pantry');
-    return;
-  }
-  
+
   setIsGenerating(true);
   setError('');
   setRecipe('');
   
   try {
     // Build the input string based on user selections
-    let input = `Ingredients: ${pantry.join(', ')}.`;
+  let input = `Generate 2 recipes based on the following input : ${pantry.join(', ')}. For each recipe, include the title, ingredients, instructions, estimated serving size, and nutritional information (calories, protein, carbs, fat).`;
+
+if (surpriseMode && pantry.length === 0) {
+      input = `Generate 2 recipes based on the some random but easily available ingredients. For each recipe, include the title, ingredients, instructions, estimated serving size, and nutritional information (calories, protein, carbs, fat).`;
+    }
     
     if (preference) {
       input += ` Preference of cuisine: ${preference}.`;
     }
-    
+
     if (fusionEnabled && fusionCuisine) {
       input += ` Fuse with: ${fusionCuisine}.`;
     } else {
@@ -161,7 +168,84 @@ const handleGenerateRecipe = async () => {
   }
 };
 
-const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
+const getMissingIngredients = (recipeText: string): string[] => {
+  if (!recipeText) return [];
+  
+  const recipes = recipeText.split(/Recipe \d+:/).filter(Boolean);
+  const allIngredients: string[] = [];
+  
+  recipes.forEach(recipe => {
+    const lines = recipe.trim().split('\n');
+    let inIngredientsSection = false;
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine.toLowerCase().includes('ingredients:')) {
+        inIngredientsSection = true;
+        return;
+      }
+      if (trimmedLine.toLowerCase().includes('instructions:')) {
+        inIngredientsSection = false;
+        return;
+      }
+      
+      if (inIngredientsSection && trimmedLine.startsWith('*')) {
+        const ingredient = trimmedLine.substring(1).trim();
+        allIngredients.push(ingredient);
+      }
+    });
+  });
+  
+  // Filter out ingredients that are already in pantry
+  const missingIngredients = allIngredients.filter(ingredient => {
+    const ingredientName = ingredient.toLowerCase().replace(/^\d+(\.\d+)?\s*(cup|cups|tbsp|tsp|oz|lb|lbs|g|kg|ml|l)?\s*/i, '');
+    return !pantry.some(pantryItem => 
+      pantryItem.toLowerCase().includes(ingredientName.split(' ')[0]) ||
+      ingredientName.includes(pantryItem.toLowerCase())
+    );
+  });
+  
+  return missingIngredients;
+};
+
+const handleShoppingCart = (recipeText: string, recipeName: string) => {
+  const missingIngredients = getMissingIngredients(recipeText);
+  setCurrentRecipeIngredients(missingIngredients);
+  
+  if (missingIngredients.length === 0) {
+    alert('You have all ingredients for this recipe!');
+    return;
+  }
+  
+  const ingredientsParam = encodeURIComponent(JSON.stringify(missingIngredients));
+  const recipeParam = encodeURIComponent(recipeName);
+  router.push(`/shopping?ingredients=${ingredientsParam}&recipe=${recipeParam}`);
+};
+
+const translateToUrdu = async (text: string, recipeIndex: number) => {
+  setTranslatingRecipes(prev => ({...prev, [recipeIndex]: true}));
+  
+  try {
+    const response = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, targetLang: 'ur' })
+    });
+    
+    const data = await response.json();
+    
+    setRecipeTranslations(prev => ({
+      ...prev,
+      [recipeIndex]: data.translatedText
+    }));
+  } catch (error) {
+    console.error('Translation failed:', error);
+  } finally {
+    setTranslatingRecipes(prev => ({...prev, [recipeIndex]: false}));
+  }
+};
+
+const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeText: string = recipeText) => {
   if (!recipeText) return null;
 
   const recipes = recipeText.split(/Recipe \d+:/).filter(Boolean);
@@ -169,6 +253,12 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
   return recipes.map((recipe, index) => {
     const lines = recipe.trim().split('\n');
     const title = lines[0];
+    const isTranslated = recipeTranslations[index];
+    const isTranslating = translatingRecipes[index];
+    
+    // Access the state from the parent component scope
+    // You'll need to have showOriginalStates and setShowOriginalStates available in the component scope
+    const showOriginal = showOriginalStates?.[index] || false;
 
     let currentSection: 'ingredients' | 'instructions' | 'servingInfo' | 'nutritionalInfo' | '' = '';
 
@@ -184,44 +274,55 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
       nutritionalInfo: []
     };
 
-    lines.slice(1).forEach(line => {
+    // Parse the original recipe or translated content based on toggle
+    const shouldShowTranslated = isTranslated && !showOriginal;
+    const contentToParse = shouldShowTranslated ? isTranslated : recipe;
+    const linesToParse = contentToParse.trim().split('\n');
+
+    linesToParse.slice(1).forEach(line => {
       const trimmedLine = line.trim();
       if (!trimmedLine) return;
 
-      if (trimmedLine.toLowerCase().includes('ingredients:')) {
+      if (trimmedLine.toLowerCase().includes('ingredients:') || trimmedLine.includes('اجزاء:')) {
         currentSection = 'ingredients';
         return;
       }
-      if (trimmedLine.toLowerCase().includes('instructions:')) {
+      if (trimmedLine.toLowerCase().includes('instructions:') || trimmedLine.includes('ہدایات:')) {
         currentSection = 'instructions';
         return;
       }
-      if (trimmedLine.toLowerCase().includes('estimated serving') || trimmedLine.toLowerCase().includes('serves')) {
+      if (trimmedLine.toLowerCase().includes('estimated serving') || 
+          trimmedLine.toLowerCase().includes('serves') ||
+          trimmedLine.includes('پیش کرنا:')) {
         currentSection = 'servingInfo';
       }
       if (
         trimmedLine.toLowerCase().includes('nutritional') ||
         trimmedLine.toLowerCase().includes('calories') ||
         trimmedLine.toLowerCase().includes('protein:') ||
-        trimmedLine.toLowerCase().includes('carbs:')
+        trimmedLine.toLowerCase().includes('carbs:') ||
+        trimmedLine.includes('غذائی معلومات:')
       ) {
         currentSection = 'nutritionalInfo';
       }
 
-      if (currentSection === 'ingredients' && trimmedLine.startsWith('*')) {
+      if (currentSection === 'ingredients' && (trimmedLine.startsWith('*') || trimmedLine.startsWith('•'))) {
         sections.ingredients.push(trimmedLine.substring(1).trim());
       } else if (currentSection === 'instructions' && /^\d+\./.test(trimmedLine)) {
         sections.instructions.push(trimmedLine);
       } else if (
         currentSection === 'servingInfo' &&
-        (trimmedLine.toLowerCase().includes('serving') || trimmedLine.toLowerCase().includes('serves'))
+        (trimmedLine.toLowerCase().includes('serving') || 
+         trimmedLine.toLowerCase().includes('serves') ||
+         trimmedLine.includes('پیش کرنا'))
       ) {
         sections.servingInfo.push(trimmedLine);
       } else if (currentSection === 'nutritionalInfo' && nutritionEnabled) {
         sections.nutritionalInfo.push(trimmedLine);
       }
     });
- return (
+
+    return (
       <motion.div 
         key={index} 
         initial={{ opacity: 0, y: 20 }}
@@ -229,23 +330,79 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
         transition={{ duration: 0.6, delay: index * 0.1 }}
         className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-8 mb-8 hover:shadow-2xl transition-all duration-500"
       >
-        <div className="flex items-center mb-6">
-          <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-4">
-            <ChefHat className="text-white w-6 h-6" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-4">
+              <ChefHat className="text-white w-6 h-6" />
+            </div>
+            <h3 className={`text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${shouldShowTranslated ? 'text-right font-urdu' : ''}`}>
+              {shouldShowTranslated ? isTranslated.split('\n')[0] : title}
+            </h3>
           </div>
-          <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {title}
-          </h3>
+          
+          <div className="flex items-center gap-3">
+            {/* Language Toggle Button - Only show if translation exists */}
+            {isTranslated && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  const newStates = [...(showOriginalStates || [])];
+                  newStates[index] = !newStates[index];
+                  setShowOriginalStates && setShowOriginalStates(newStates);
+                }}
+                className="flex items-center p-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                title={showOriginal ? "Switch to Urdu" : "Switch to English"}
+              >
+                <Globe className="w-5 h-5 mr-2" />
+                <span className="text-sm font-medium">
+                  {showOriginal ? 'اردو' : 'English'}
+                </span>
+              </motion.button>
+            )}
+
+            {/* Translation Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => translateToUrdu(recipe, index)}
+              disabled={isTranslating}
+              className="flex items-center p-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              title={isTranslated ? "Translated to Urdu" : "Translate to Urdu"}
+            >
+              {isTranslating ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+              ) : (
+                <Languages className="w-5 h-5 mr-2" />
+              )}
+              <span className="text-sm font-medium">
+                {isTranslating ? 'Translating...' : isTranslated ? 'اردو میں' : 'اردو'}
+              </span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => handleShoppingCart(recipeText, title)}
+              className="flex items-center p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              title="Create Shopping List"
+            >
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              <span className="text-sm font-medium">Shopping List</span>
+            </motion.button>
+          </div>
         </div>
-        
-        <div className="grid lg:grid-cols-2 gap-8">
+
+        <div className={`grid lg:grid-cols-2 gap-8 ${shouldShowTranslated ? 'rtl' : ''}`}>
           {/* Ingredients Section */}
           <div className="space-y-4">
             <div className="flex items-center mb-4">
               <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg mr-3">
                 <Utensils className="text-white w-5 h-5" />
               </div>
-              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Ingredients</h4>
+              <h4 className={`text-xl font-semibold text-slate-700 dark:text-slate-300 ${shouldShowTranslated ? 'font-urdu' : ''}`}>
+                {shouldShowTranslated ? 'اجزاء' : 'Ingredients'}
+              </h4>
             </div>
             <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 backdrop-blur-sm">
               <ul className="space-y-2">
@@ -255,7 +412,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="text-slate-600 dark:text-slate-400 flex items-start text-sm leading-relaxed"
+                    className={`text-slate-600 dark:text-slate-400 flex items-start text-sm leading-relaxed ${shouldShowTranslated ? 'text-right font-urdu' : ''}`}
                   >
                     <span className="text-green-500 mr-3 font-bold">•</span>
                     {ingredient}
@@ -271,7 +428,9 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
               <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mr-3">
                 <Clock className="text-white w-5 h-5" />
               </div>
-              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Instructions</h4>
+              <h4 className={`text-xl font-semibold text-slate-700 dark:text-slate-300 ${shouldShowTranslated ? 'font-urdu' : ''}`}>
+                {shouldShowTranslated ? 'ہدایات' : 'Instructions'}
+              </h4>
             </div>
             <div className="bg-gradient-to-r from-blue-50/80 to-cyan-50/80 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-4 backdrop-blur-sm">
               <ol className="space-y-3">
@@ -281,7 +440,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed"
+                    className={`text-slate-600 dark:text-slate-400 text-sm leading-relaxed ${shouldShowTranslated ? 'text-right font-urdu' : ''}`}
                   >
                     {instruction}
                   </motion.li>
@@ -298,7 +457,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
               <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mr-3">
                 <Users className="text-white w-4 h-4" />
               </div>
-              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              <div className={`text-sm font-medium text-slate-600 dark:text-slate-400 ${shouldShowTranslated ? 'font-urdu' : ''}`}>
                 {sections.servingInfo.map((info, i) => (
                   <span key={i}>{info}</span>
                 ))}
@@ -319,7 +478,9 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
               <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg mr-3">
                 <Heart className="text-white w-5 h-5" />
               </div>
-              <h4 className="text-xl font-semibold text-slate-700 dark:text-slate-300">Nutritional Information</h4>
+              <h4 className={`text-xl font-semibold text-slate-700 dark:text-slate-300 ${shouldShowTranslated ? 'font-urdu' : ''}`}>
+                {shouldShowTranslated ? 'غذائی معلومات' : 'Nutritional Information'}
+              </h4>
             </div>
             <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 backdrop-blur-sm">
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -331,7 +492,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
                     transition={{ delay: i * 0.05 }}
                     className="bg-white/60 dark:bg-slate-700/60 rounded-lg p-3 text-center backdrop-blur-sm"
                   >
-                    <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <span className={`text-sm text-slate-600 dark:text-slate-400 font-medium ${shouldShowTranslated ? 'font-urdu' : ''}`}>
                       {info}
                     </span>
                   </motion.div>
@@ -780,6 +941,29 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
 
 </div>
 
+{/* Surprise Me Button */}
+<motion.div
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="pt-4"
+>
+  <Button
+    onClick={() => {
+      setSurpriseMode(true);
+      handleGenerateRecipe();
+    }}
+    disabled={isGenerating}
+    variant="outline"
+    className="text-lg px-8 py-4 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+  >
+    <div className="flex items-center gap-3">
+      <Sparkles className="w-5 h-5" />
+      <span>Surprise Me!</span>
+    </div>
+  </Button>
+</motion.div>
+
+
           {/* Generate Button */}
           <motion.div
             whileHover={{ scale: pantry.length > 0 ? 1.05 : 1 }}
@@ -808,16 +992,16 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean) => {
             </Button>
           </motion.div>
 
-          {pantry.length === 0 && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="text-sm text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2"
-            >
-              Add ingredients to your pantry to get started
-            </motion.p>
-          )}
+       {pantry.length === 0 && (
+  <motion.p
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 1 }}
+    className="text-sm text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2"
+  >
+    <span>Add ingredients to your pantry or try Surprise Me for random recipes</span>
+  </motion.p>
+)}
         </div>
       </CardContent>
     </Card>
