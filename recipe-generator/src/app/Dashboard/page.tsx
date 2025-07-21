@@ -320,6 +320,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
         sections.nutritionalInfo.push(trimmedLine);
       }
     });
+    
 
     return (
       <motion.div 
@@ -513,6 +514,8 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
     );
   });
 };
+
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 text-foreground overflow-hidden relative">
       {/* Sidebar */}
