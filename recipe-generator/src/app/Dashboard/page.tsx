@@ -328,19 +328,19 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: index * 0.1 }}
-        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-8 mb-8 hover:shadow-2xl transition-all duration-500"
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 p-4 sm:p-8 mb-8 hover:shadow-2xl transition-all duration-500"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-4">
-              <ChefHat className="text-white w-6 h-6" />
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mr-3 sm:mr-4">
+              <ChefHat className="text-white w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className={`text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${shouldShowTranslated ? 'text-right font-urdu' : ''}`}>
+            <h3 className={`text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${shouldShowTranslated ? 'text-right font-urdu' : ''}`}>
               {shouldShowTranslated ? isTranslated.split('\n')[0] : title}
             </h3>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {/* Language Toggle Button - Only show if translation exists */}
             {isTranslated && (
               <motion.button
@@ -351,11 +351,11 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
                   newStates[index] = !newStates[index];
                   setShowOriginalStates && setShowOriginalStates(newStates);
                 }}
-                className="flex items-center p-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
                 title={showOriginal ? "Switch to Urdu" : "Switch to English"}
               >
-                <Globe className="w-5 h-5 mr-2" />
-                <span className="text-sm font-medium">
+                <Globe className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <span className="hidden sm:inline text-sm font-medium ml-1">
                   {showOriginal ? 'اردو' : 'English'}
                 </span>
               </motion.button>
@@ -367,15 +367,15 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
               whileTap={{ scale: 0.9 }}
               onClick={() => translateToUrdu(recipe, index)}
               disabled={isTranslating}
-              className="flex items-center p-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
               title={isTranslated ? "Translated to Urdu" : "Translate to Urdu"}
             >
               {isTranslating ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent sm:mr-2" />
               ) : (
-                <Languages className="w-5 h-5 mr-2" />
+                <Languages className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
               )}
-              <span className="text-sm font-medium">
+              <span className="hidden sm:inline text-sm font-medium ml-1">
                 {isTranslating ? 'Translating...' : isTranslated ? 'اردو میں' : 'اردو'}
               </span>
             </motion.button>
@@ -384,11 +384,13 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleShoppingCart(recipeText, title)}
-              className="flex items-center p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
               title="Create Shopping List"
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium">Shopping List</span>
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+              <span className="hidden sm:inline text-sm font-medium ml-1">
+                Shopping List
+              </span>
             </motion.button>
           </div>
         </div>
