@@ -518,7 +518,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 text-foreground overflow-hidden relative">
-      {/* Sidebar */}
+   {/* Sidebar */}
       <motion.aside
         initial={{ width: 320, opacity: 0 }}
         animate={{ 
@@ -560,7 +560,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
             <div className="space-y-3">
               <div className="relative">
                 <Input
-                  placeholder="Add ingredient..."
+                  placeholder="Enter ingredient or Quick Add"
                   value={ingredientInput}
                   onChange={(e) => setIngredientInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -578,45 +578,6 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
                 </motion.button>
               </div>
             </div>
-
-            {/*Quick Add */}
-            <div className="space-y-4">
-              {quickAddItems.map(({ label, icon: Icon, items, color, bgColor }, index) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={clsx('p-4 rounded-xl transition-all duration-200', bgColor)}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={clsx('p-2 rounded-lg bg-gradient-to-r', color)}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <p className="font-semibold text-slate-700 dark:text-slate-300">{label}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((item) => (
-                      <motion.button
-                        key={item}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={clsx(
-                          'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                          'bg-white/80 dark:bg-slate-600/80 hover:bg-gradient-to-r hover:text-white shadow-sm hover:shadow-md',
-                          `hover:${color}`
-                        )}
-                        onClick={() => handleQuickAdd(item)}
-                      >
-                        {item}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <Separator className="my-4" />
 
             {/*Pantry List */}
             <div>
@@ -662,6 +623,55 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
                 </AnimatePresence>
               </div>
             </div>
+
+            <Separator className="my-4" />
+
+            {/*Quick Add */}
+            <div className="space-y-4">
+               <p className="font-semibold text-slate-700 dark:text-slate-300">Quick Add</p>
+              {quickAddItems.map(({ label, icon: Icon, items, color, bgColor }, index) => (
+                <motion.div
+                  key={label}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={clsx('p-4 rounded-xl transition-all duration-200', bgColor)}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={clsx('p-2 rounded-lg bg-gradient-to-r', color)}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">{label}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {items.map((item) => {
+                      const isSelected = pantry.includes(item);
+                      return (
+                        <motion.button
+                          key={item}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={clsx(
+                            'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md',
+                            isSelected ? (
+                              // Selected state - use the category color gradient
+                              `bg-gradient-to-r ${color} text-white ring-2 ring-white/50`
+                            ) : (
+                              // Unselected state - white background with hover effect
+                              `bg-white/80 dark:bg-slate-600/80 text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:text-white hover:${color}`
+                            )
+                          )}
+                          onClick={() => handleQuickAdd(item)}
+                        >
+                          {item}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
           </div>
         </div>
       </motion.aside>

@@ -35,7 +35,7 @@ export default function RecipeGeneratorPage() {
     setRecipe('');
     
     try {
-      const input = `Ingredients: ${ingredients}. Preference of cuisine: ${cuisine || 'any'}. Fuse with: ${fusionCuisine || 'none'}.`;
+      const input = `Ingredients: ${ingredients}. Preference of cuisine: ${cuisine || 'any'}. Fuse with: ${fusionCuisine || 'none'}.Start your response with recipe title in first lines and then follow with ingredients, instructions in next lines.`;
       
       const response = await fetch('/api/generate-recipe', {
         method: 'POST',
@@ -60,99 +60,94 @@ export default function RecipeGeneratorPage() {
   };
 
   const formatRecipe = (recipeText: string) => {
-    if (!recipeText) return null;
-    
-    const recipes = recipeText.split(/Recipe \d+:/).filter(Boolean);
-    
-    return recipes.map((recipe, index) => {
-      const lines = recipe.trim().split('\n');
-      const title = lines[0];
-      
-      let currentSection: 'ingredients' | 'instructions' | 'servingInfo' | '' = '';
-      const sections: Recipe = {
-        ingredients: [],
-        instructions: [],
-        servingInfo: []
-      };
-      
-      lines.slice(1).forEach(line => {
-        const trimmedLine = line.trim();
-        if (!trimmedLine) return;
-        
-        if (trimmedLine.toLowerCase().includes('ingredients:')) {
-          currentSection = 'ingredients';
-          return;
-        }
-        if (trimmedLine.toLowerCase().includes('instructions:')) {
-          currentSection = 'instructions';
-          return;
-        }
-        if (trimmedLine.toLowerCase().includes('estimated serving')) {
-          currentSection = 'servingInfo';
-        }
-        
-        if (currentSection === 'ingredients' && trimmedLine.startsWith('*')) {
-          sections.ingredients.push(trimmedLine.substring(1).trim());
-        } else if (currentSection === 'instructions' && /^\d+\./.test(trimmedLine)) {
-          sections.instructions.push(trimmedLine);
-        } else if (currentSection === 'servingInfo' && trimmedLine.toLowerCase().includes('serving')) {
-          sections.servingInfo.push(trimmedLine);
-        }
-      });
-      
-      return (
-        <div key={index} className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
-          <div className="flex items-center mb-4">
-            <ChefHat className="text-orange-500 mr-2" size={24} />
-            <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center mb-3">
-                <Utensils className="text-green-500 mr-2" size={20} />
-                <h4 className="text-lg font-semibold text-gray-700">Ingredients</h4>
-              </div>
-              <ul className="space-y-1">
-                {sections.ingredients.map((ingredient, i) => (
-                  <li key={i} className="text-gray-600 text-sm flex items-start">
-                    <span className="text-orange-400 mr-2">•</span>
-                    {ingredient}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <div className="flex items-center mb-3">
-                <Clock className="text-blue-500 mr-2" size={20} />
-                <h4 className="text-lg font-semibold text-gray-700">Instructions</h4>
-              </div>
-              <ol className="space-y-2">
-                {sections.instructions.map((instruction, i) => (
-                  <li key={i} className="text-gray-600 text-sm">{instruction}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
-          
-          {sections.servingInfo.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              <div className="flex items-center">
-                <Users className="text-purple-500 mr-2" size={16} />
-                <div className="text-sm text-gray-600">
-                  {sections.servingInfo.map((info, i) => (
-                    <span key={i} className="font-medium">{info}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    });
+  if (!recipeText) return null;
+  
+  const lines = recipeText.trim().split('\n');
+  const title = lines[0];
+  
+  let currentSection: 'ingredients' | 'instructions' | 'servingInfo' | '' = '';
+  const sections: Recipe = {
+    ingredients: [],
+    instructions: [],
+    servingInfo: []
   };
-
+  
+  lines.forEach(line => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) return;
+    
+    if (trimmedLine.toLowerCase().includes('ingredients:')) {
+      currentSection = 'ingredients';
+      return;
+    }
+    if (trimmedLine.toLowerCase().includes('instructions:')) {
+      currentSection = 'instructions';
+      return;
+    }
+    if (trimmedLine.toLowerCase().includes('estimated serving')) {
+      currentSection = 'servingInfo';
+    }
+    
+    if (currentSection === 'ingredients' && (trimmedLine.startsWith('*') || trimmedLine.startsWith('-'))) {
+      sections.ingredients.push(trimmedLine.substring(1).trim());
+    } else if (currentSection === 'instructions' && /^\d+\./.test(trimmedLine)) {
+      sections.instructions.push(trimmedLine);
+    } else if (currentSection === 'servingInfo' && trimmedLine.toLowerCase().includes('serving')) {
+      sections.servingInfo.push(trimmedLine);
+    }
+  });
+  
+  return [(
+    <div key={0} className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
+      <div className="flex items-center mb-4">
+        <ChefHat className="text-orange-500 mr-2" size={24} />
+        <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
+      </div>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <div className="flex items-center mb-3">
+            <Utensils className="text-green-500 mr-2" size={20} />
+            <h4 className="text-lg font-semibold text-gray-700">Ingredients</h4>
+          </div>
+          <ul className="space-y-1">
+            {sections.ingredients.map((ingredient, i) => (
+              <li key={i} className="text-gray-600 text-sm flex items-start">
+                <span className="text-orange-400 mr-2">•</span>
+                {ingredient}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div>
+          <div className="flex items-center mb-3">
+            <Clock className="text-blue-500 mr-2" size={20} />
+            <h4 className="text-lg font-semibold text-gray-700">Instructions</h4>
+          </div>
+          <ol className="space-y-2">
+            {sections.instructions.map((instruction, i) => (
+              <li key={i} className="text-gray-600 text-sm">{instruction}</li>
+            ))}
+          </ol>
+        </div>
+      </div>
+      
+      {sections.servingInfo.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center">
+            <Users className="text-purple-500 mr-2" size={16} />
+            <div className="text-sm text-gray-600">
+              {sections.servingInfo.map((info, i) => (
+                <span key={i} className="font-medium">{info}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )];
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       {/* Navigation Header */}
@@ -169,7 +164,7 @@ export default function RecipeGeneratorPage() {
             
             <div className="flex items-center space-x-2">
               <ChefHat className="text-orange-500" size={24} />
-              <span className="font-semibold text-gray-800">Recipe Generator</span>
+              <span className="font-semibold text-gray-800">Recipe Generator Demo</span>
             </div>
             
             <div className="w-24"></div> {/* Spacer for centering */}
@@ -183,7 +178,7 @@ export default function RecipeGeneratorPage() {
             <Sparkles className="text-orange-500 mr-3" size={32} />
             <h1 className="text-4xl font-bold text-gray-800">AI Recipe Generator</h1>
           </div>
-          <p className="text-lg text-gray-600">Create fusion recipes with your available ingredients</p>
+          <p className="text-lg text-gray-600">Blend available ingredients into a fusion of two cusines</p>
         </div>
 
         <div className="max-w-2xl mx-auto mb-8">
@@ -267,8 +262,7 @@ export default function RecipeGeneratorPage() {
         {recipe && (
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Custom Recipes</h2>
-              <p className="text-gray-600">Here are some delicious recipes tailored to your needs!</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Custom Recipe</h2>
             </div>
             
             <div className="space-y-6">

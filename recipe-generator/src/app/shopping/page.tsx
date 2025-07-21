@@ -5,13 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ShoppingCart, 
-  ArrowLeft, 
-  Package,
-  DollarSign,
-  ChefHat,
-} from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Package,DollarSign,ChefHat, } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import clsx from 'clsx';
 
@@ -374,7 +368,7 @@ function ShoppingContent() {
                   </p>
                   
                   <Button
-                    onClick={() => router.push('/Dashboard')}
+                    onClick={() => router.back()}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
                   >
                     <ChefHat className="w-4 h-4 mr-2" />
@@ -390,7 +384,6 @@ function ShoppingContent() {
   );
 }
 
-// Loading component for suspense fallback
 function ShoppingPageLoading() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900">
