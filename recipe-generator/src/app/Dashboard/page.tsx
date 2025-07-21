@@ -256,8 +256,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
     const isTranslated = recipeTranslations[index];
     const isTranslating = translatingRecipes[index];
     
-    // Access the state from the parent component scope
-    // You'll need to have showOriginalStates and setShowOriginalStates available in the component scope
+
     const showOriginal = showOriginalStates?.[index] || false;
 
     let currentSection: 'ingredients' | 'instructions' | 'servingInfo' | 'nutritionalInfo' | '' = '';
@@ -351,12 +350,12 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
                   newStates[index] = !newStates[index];
                   setShowOriginalStates && setShowOriginalStates(newStates);
                 }}
-                className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
+                className="flex flex-col sm:flex-row items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg sm:rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none min-h-[3rem] sm:min-h-0"
                 title={showOriginal ? "Switch to Urdu" : "Switch to English"}
               >
                 <Globe className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
-                <span className="hidden sm:inline text-sm font-medium ml-1">
-                  {showOriginal ? 'اردو' : 'English'}
+                <span className="text-xs sm:text-sm font-medium mt-1 sm:mt-0 sm:ml-1">
+                  {showOriginal ? 'اردو' : 'EN'}
                 </span>
               </motion.button>
             )}
@@ -367,29 +366,36 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
               whileTap={{ scale: 0.9 }}
               onClick={() => translateToUrdu(recipe, index)}
               disabled={isTranslating}
-              className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
+              className="flex flex-col sm:flex-row items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg sm:rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none min-h-[3rem] sm:min-h-0"
               title={isTranslated ? "Translated to Urdu" : "Translate to Urdu"}
             >
               {isTranslating ? (
-                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent sm:mr-2" />
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent sm:mr-2" />
+                  <span className="text-xs sm:text-sm font-medium mt-1 sm:mt-0 sm:ml-1">
+                    Wait...
+                  </span>
+                </>
               ) : (
-                <Languages className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <>
+                  <Languages className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="text-xs sm:text-sm font-medium mt-1 sm:mt-0 sm:ml-1">
+                    {isTranslated ? 'اردو میں' : 'Translate'}
+                  </span>
+                </>
               )}
-              <span className="hidden sm:inline text-sm font-medium ml-1">
-                {isTranslating ? 'Translating...' : isTranslated ? 'اردو میں' : 'اردو'}
-              </span>
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleShoppingCart(recipeText, title)}
-              className="flex items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
+              className="flex flex-col sm:flex-row items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg sm:rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none min-h-[3rem] sm:min-h-0"
               title="Create Shopping List"
             >
               <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
-              <span className="hidden sm:inline text-sm font-medium ml-1">
-                Shopping List
+              <span className="text-xs sm:text-sm font-medium mt-1 sm:mt-0 sm:ml-1">
+                Shop List
               </span>
             </motion.button>
           </div>
@@ -507,7 +513,6 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
     );
   });
 };
-
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 text-foreground overflow-hidden relative">
       {/* Sidebar */}
@@ -748,7 +753,7 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
               Ready to Cook?
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Transform your ingredients into extraordinary recipes with the power of AI. Add items to your pantry and let our intelligent chef create personalized culinary experiences just for you.
+            Add items to your pantry and let our intelligent  Ai chef create personalized culinary experiences just for you. Use surprise me to discover new recipies without adding ingredients. Fusion mode is available to create unique recipes by combining two culinary preferences.
             </p>
           </div>
 
