@@ -631,14 +631,14 @@ const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
               </motion.div>
               <h2 className="text-xl font-bold">Smart Pantry</h2>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-white hover:bg-black/20 cursor-pointer" 
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="w-5 h-5" />
-            </Button>
+  <Button 
+  variant="outline" 
+  size="icon" 
+  className="bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" 
+  onClick={() => setSidebarOpen(false)}
+>
+  <X className="w-5 h-5" />
+</Button>
           </div>
 
           <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
@@ -764,38 +764,47 @@ const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
 
       {/* Main content */}
 
-{/* View Saved Recipes Button */}
-<motion.button
-  initial={{ opacity: 0, scale: 0.8 }}
-  animate={{ opacity: 1, scale: 1 }}
-  whileHover={{ scale: 1.05, y: -2 }}
-  whileTap={{ scale: 0.95 }}
-  onClick={() => router.push('/saved-recipes')}
-  className="fixed top-6 right-20 z-20 bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-700 hover:to-pink-600 text-white px-4 py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
-  title="View Saved Recipes"
->
-  <div className="flex items-center gap-2">
-    <BookOpen className="w-4 h-4" />
-    <span className="text-xs font-semibold tracking-wide">
-      Saved Recipes
-    </span>
-  </div>
-</motion.button>
+{/* Button Container */}
+<div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-20 flex flex-col gap-2 sm:flex-row sm:gap-2 lg:gap-3">
+  {/* View Saved Recipes Button */}
+  <motion.button
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    whileHover={{ scale: 1.05, y: -2 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => router.push('/saved-recipes')}
+    className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-700 hover:to-pink-600 text-white px-3 py-2 sm:px-3 sm:py-2 lg:px-4 lg:py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
+    title="View Saved Recipes"
+  >
+    <div className="flex items-center gap-1.5 sm:gap-1.5 lg:gap-2">
+      <BookOpen className="w-4 h-4 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 flex-shrink-0" />
+      <span className="text-xs sm:text-xs lg:text-sm font-semibold tracking-wide hidden xs:inline sm:inline">
+        Saved Recipes
+      </span>
+      <span className="text-xs font-semibold tracking-wide xs:hidden sm:hidden">
+        Saved
+      </span>
+    </div>
+  </motion.button>
 
-{/* Sign Out Button */}
-<motion.button
-  initial={{ opacity: 0, scale: 0.8 }}
-  animate={{ opacity: 1, scale: 1 }}
-  whileHover={{ scale: 1.05, y: -2 }}
-  whileTap={{ scale: 0.95 }}
-  onClick={handleSignOut}
-  className="fixed top-6 right-6 z-20 bg-gradient-to-r from-red-500 via-red-600 to-red-500 hover:from-red-600 hover:via-red-700 hover:to-red-600 text-white px-3 py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
-  title="Sign Out"
->
-  <LogOut className="w-4 h-4" />
-</motion.button>
-
-
+  {/* Sign Out Button */}
+  <motion.button
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    whileHover={{ scale: 1.05, y: -2 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={handleSignOut}
+    className="bg-gradient-to-r from-red-500 via-red-600 to-red-500 hover:from-red-600 hover:via-red-700 hover:to-red-600 text-white px-3 py-2 sm:px-3 sm:py-2 lg:px-4 lg:py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
+    title="Sign Out"
+  >
+    <div className="flex items-center gap-1.5 sm:gap-1.5 lg:gap-2">
+      <LogOut className="w-4 h-4 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 flex-shrink-0" />
+      <span className="text-xs sm:text-xs lg:text-sm font-semibold tracking-wide hidden sm:inline">
+        Sign Out
+      </span>
+    </div>
+  </motion.button>
+</div>
 
       <main className="flex-1 relative p-8 overflow-y-auto">
         {!sidebarOpen && (
@@ -1072,8 +1081,8 @@ const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
 
 {/* Surprise Me Button */}
 <motion.div
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
+  whileHover={{ scale: pantry.length === 0 ? 1.05 : 1 }}
+  whileTap={{ scale: pantry.length === 0 ? 0.95 : 1 }}
   className="pt-4"
 >
   <Button
@@ -1081,13 +1090,19 @@ const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
       setSurpriseMode(true);
       handleGenerateRecipe();
     }}
-    disabled={isGenerating}
+    disabled={isGenerating || pantry.length > 0}
     variant="outline"
-    className="text-lg px-8 py-4 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+    className={`text-lg px-8 py-4 transition-all duration-300 rounded-xl ${
+      pantry.length > 0
+        ? 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+        : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 shadow-lg hover:shadow-xl'
+    }`}
   >
     <div className="flex items-center gap-3">
       <Sparkles className="w-5 h-5" />
-      <span>Surprise Me!</span>
+      <span>
+        {pantry.length > 0 ? 'Clear pantry for surprise' : 'Surprise Me!'}
+      </span>
     </div>
   </Button>
 </motion.div>

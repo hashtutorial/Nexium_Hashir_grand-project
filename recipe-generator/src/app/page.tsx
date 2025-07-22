@@ -80,10 +80,10 @@ export default function Home() {
     ChefGPT
   </h1>
 </Link>
-        <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
           <ModeToggle />
           <Link href="/signin">
-            <Button variant="ghost" className="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-950/50 transition-all duration-300">
+            <Button className="cursor-pointer bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300">
               Sign In
             </Button>
           </Link>
