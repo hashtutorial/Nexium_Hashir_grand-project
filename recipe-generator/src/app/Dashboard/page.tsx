@@ -27,6 +27,7 @@ import {
   Utensils,
   ShoppingCart,
   Languages,
+  BookOpen,
   X
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -399,6 +400,21 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
                 Shop List
               </span>
             </motion.button>
+
+{/* Save to Favourites Button */}
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={() => saveRecipeToDb(recipeText, index)}
+    className="flex flex-col sm:flex-row items-center justify-center p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg sm:rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none min-h-[3rem] sm:min-h-0"
+    title="Add to Favourites"
+  >
+    <Heart className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+    <span className="text-xs sm:text-sm font-medium mt-1 sm:mt-0 sm:ml-1">
+      Save
+    </span>
+  </motion.button>
+
           </div>
         </div>
 
@@ -515,6 +531,76 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
   });
 };
 
+//function to parse recipe data
+const parseRecipeData = (recipeText: string, index: number) => {
+  const recipes = recipeText.split(/Recipe \d+:/).filter(Boolean);
+  const recipe = recipes[index];
+  
+  if (!recipe) return null;
+  
+  const lines = recipe.trim().split('\n');
+  const title = lines[0];
+  
+  let currentSection: 'ingredients' | 'instructions' | '' = '';
+  const ingredients: string[] = [];
+  const steps: string[] = [];
+  
+  lines.slice(1).forEach(line => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) return;
+    
+    if (trimmedLine.toLowerCase().includes('ingredients:')) {
+      currentSection = 'ingredients';
+      return;
+    }
+    if (trimmedLine.toLowerCase().includes('instructions:')) {
+      currentSection = 'instructions';
+      return;
+    }
+    
+    if (currentSection === 'ingredients' && (trimmedLine.startsWith('*') || trimmedLine.startsWith('•'))) {
+      ingredients.push(trimmedLine.substring(1).trim());
+    } else if (currentSection === 'instructions' && /^\d+\./.test(trimmedLine)) {
+      steps.push(trimmedLine);
+    }
+  });
+  
+  return { title, ingredients, steps };
+};
+
+
+// to save recipe to db function
+const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
+  try {
+    const parsedRecipe = parseRecipeData(recipeText, recipeIndex);
+    if (!parsedRecipe) return;
+    
+    const translatedText = recipeTranslations[recipeIndex] || null;
+    
+    const response = await fetch('/api/recipes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: parsedRecipe.title,
+        ingredients: parsedRecipe.ingredients,
+        steps: parsedRecipe.steps,
+        translated_urdu: translatedText
+      }),
+    });
+    
+    if (response.ok) {
+      // Show success message - you could use a toast library here
+      alert('Recipe saved successfully!');
+    } else {
+      throw new Error('Failed to save recipe');
+    }
+  } catch (error) {
+    console.error('Error saving recipe:', error);
+    alert('Failed to save recipe. Please try again.');
+  }
+};
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 text-foreground overflow-hidden relative">
@@ -677,17 +763,40 @@ const formatRecipe = (recipeText: string, nutritionEnabled: boolean, fullRecipeT
       </motion.aside>
 
       {/* Main content */}
-      <motion.button
+
+{/* View Saved Recipes Button */}
+<motion.button
   initial={{ opacity: 0, scale: 0.8 }}
   animate={{ opacity: 1, scale: 1 }}
-  whileHover={{ scale: 1.1 }}
-  whileTap={{ scale: 0.9 }}
+  whileHover={{ scale: 1.05, y: -2 }}
+  whileTap={{ scale: 0.95 }}
+  onClick={() => router.push('/saved-recipes')}
+  className="fixed top-6 right-20 z-20 bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-700 hover:to-pink-600 text-white px-4 py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
+  title="View Saved Recipes"
+>
+  <div className="flex items-center gap-2">
+    <BookOpen className="w-4 h-4" />
+    <span className="text-xs font-semibold tracking-wide">
+      Saved Recipes
+    </span>
+  </div>
+</motion.button>
+
+{/* Sign Out Button */}
+<motion.button
+  initial={{ opacity: 0, scale: 0.8 }}
+  animate={{ opacity: 1, scale: 1 }}
+  whileHover={{ scale: 1.05, y: -2 }}
+  whileTap={{ scale: 0.95 }}
   onClick={handleSignOut}
-  className="fixed top-6 right-6 z-20 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+  className="fixed top-6 right-6 z-20 bg-gradient-to-r from-red-500 via-red-600 to-red-500 hover:from-red-600 hover:via-red-700 hover:to-red-600 text-white px-3 py-2.5 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 backdrop-blur-sm border border-white/20"
   title="Sign Out"
 >
-  <LogOut className="w-5 h-5" />
-      </motion.button>
+  <LogOut className="w-4 h-4" />
+</motion.button>
+
+
+
       <main className="flex-1 relative p-8 overflow-y-auto">
         {!sidebarOpen && (
           <motion.button
