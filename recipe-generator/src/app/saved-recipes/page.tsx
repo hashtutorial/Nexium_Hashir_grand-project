@@ -210,173 +210,173 @@ export default function SavedRecipesPage() {
           </div>
         </motion.div>
 
-        {/* Recipes Grid */}
-        {filteredAndSortedRecipes.length === 0 ? (
+      {/* Recipes Grid */}
+{filteredAndSortedRecipes.length === 0 ? (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, delay: 0.2 }}
+    className="text-center py-8 sm:py-16"
+  >
+    <div className="p-4 sm:p-6 bg-gradient-to-r from-slate-100 to-blue-100 dark:from-slate-800 dark:to-blue-900 rounded-full w-20 h-20 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6 flex items-center justify-center">
+      <Heart className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400 dark:text-slate-500" />
+    </div>
+    <h3 className="text-xl sm:text-2xl font-bold text-slate-700 dark:text-slate-300 mb-2 px-4">
+      {searchTerm ? 'No recipes found' : 'No saved recipes yet'}
+    </h3>
+    <p className="text-slate-600 dark:text-slate-400 mb-4 sm:mb-6 px-4">
+      {searchTerm 
+        ? 'Try adjusting your search terms' 
+        : 'Start saving recipes from your dashboard to see them here!'
+      }
+    </p>
+    <Button
+      onClick={() => router.push('/Dashboard')}
+      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base"
+    >
+      <ChefHat className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+      Go to Dashboard
+    </Button>
+  </motion.div>
+) : (
+  <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <AnimatePresence>
+      {filteredAndSortedRecipes.map((recipe, index) => {
+        const isTranslated = showTranslated[recipe.id] && recipe.translated_urdu;
+        const displayContent = isTranslated ? recipe.translated_urdu : null;
+        
+        return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center py-16"
+            key={recipe.id}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            layout
           >
-            <div className="p-6 bg-gradient-to-r from-slate-100 to-blue-100 dark:from-slate-800 dark:to-blue-900 rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-              <Heart className="w-16 h-16 text-slate-400 dark:text-slate-500" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-2">
-              {searchTerm ? 'No recipes found' : 'No saved recipes yet'}
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              {searchTerm 
-                ? 'Try adjusting your search terms' 
-                : 'Start saving recipes from your dashboard to see them here!'
-              }
-            </p>
-            <Button
-              onClick={() => router.push('/Dashboard')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl"
-            >
-              <ChefHat className="w-5 h-5 mr-2" />
-              Go to Dashboard
-            </Button>
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-lg sm:shadow-xl border border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl sm:hover:shadow-2xl transition-all duration-500 h-full">
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                {/* Recipe Header */}
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="p-1.5 sm:p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex-shrink-0">
+                      <ChefHat className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <h3 className={`font-bold text-sm sm:text-base md:text-lg text-slate-800 dark:text-slate-200 truncate ${isTranslated ? 'text-right font-urdu' : ''}`}>
+                      {isTranslated ? displayContent?.split('\n')[0] : recipe.title}
+                    </h3>
+                  </div>
+                  
+                  <div className="flex gap-0.5 sm:gap-1 ml-2">
+                    {/* Translation Toggle */}
+                    {recipe.translated_urdu && (
+                      <Button
+                        onClick={() => toggleTranslation(recipe.id)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                        title={isTranslated ? "Show English" : "Show Urdu"}
+                      >
+                        <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Delete Button */}
+                    <Button
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this recipe?')) {
+                          deleteRecipe(recipe.id);
+                        }
+                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="Delete recipe"
+                    >
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Recipe Content */}
+                <div className={`space-y-3 sm:space-y-4 ${isTranslated ? 'rtl' : ''}`}>
+                  {/* Ingredients */}
+                  <div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                      <Utensils className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                      <h4 className={`font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-300 ${isTranslated ? 'font-urdu' : ''}`}>
+                        {isTranslated ? 'اجزاء' : 'Ingredients'}
+                      </h4>
+                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                        {recipe.ingredients.length}
+                      </span>
+                    </div>
+                    <div className="bg-green-50/50 dark:bg-green-900/10 rounded-lg p-2 sm:p-3 max-h-20 sm:max-h-24 md:max-h-32 overflow-y-auto">
+                      <ul className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {recipe.ingredients.slice(0, 3).map((ingredient, i) => (
+                          <li key={i} className={`flex items-start ${isTranslated ? 'text-right font-urdu' : ''}`}>
+                            <span className="text-green-500 mr-1.5 sm:mr-2 flex-shrink-0">•</span>
+                            <span className="truncate">{ingredient}</span>
+                          </li>
+                        ))}
+                        {recipe.ingredients.length > 3 && (
+                          <li className="text-slate-500 italic text-xs">
+                            +{recipe.ingredients.length - 3} more...
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Steps Preview */}
+                  <div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                      <h4 className={`font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-300 ${isTranslated ? 'font-urdu' : ''}`}>
+                        {isTranslated ? 'ہدایات' : 'Instructions'}
+                      </h4>
+                      <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                        {recipe.steps.length} steps
+                      </span>
+                    </div>
+                    <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-lg p-2 sm:p-3 max-h-20 sm:max-h-24 md:max-h-32 overflow-y-auto">
+                      <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {recipe.steps.slice(0, 2).map((step, i) => (
+                          <div key={i} className={`flex items-start ${isTranslated ? 'text-right font-urdu' : ''}`}>
+                            <span className="text-blue-500 mr-1.5 sm:mr-2 flex-shrink-0 font-medium text-xs sm:text-sm">{i + 1}.</span>
+                            <span className="line-clamp-2 text-xs sm:text-sm leading-tight">{step}</span>
+                          </div>
+                        ))}
+                        {recipe.steps.length > 2 && (
+                          <div className="text-slate-500 italic text-xs">
+                            +{recipe.steps.length - 2} more steps...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-3 sm:mt-4 pt-2 sm:pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <span className="truncate">
+                    Saved {new Date(recipe.created_at).toLocaleDateString()}
+                  </span>
+                  {recipe.translated_urdu && (
+                    <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                      <Languages className="w-3 h-3" />
+                      <span className="hidden sm:inline">Urdu</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence>
-              {filteredAndSortedRecipes.map((recipe, index) => {
-                const isTranslated = showTranslated[recipe.id] && recipe.translated_urdu;
-                const displayContent = isTranslated ? recipe.translated_urdu : null;
-                
-                return (
-                  <motion.div
-                    key={recipe.id}
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    layout
-                  >
-                    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-500 h-full">
-                      <CardContent className="p-6">
-                        {/* Recipe Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex-shrink-0">
-                              <ChefHat className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className={`font-bold text-lg text-slate-800 dark:text-slate-200 truncate ${isTranslated ? 'text-right font-urdu' : ''}`}>
-                              {isTranslated ? displayContent?.split('\n')[0] : recipe.title}
-                            </h3>
-                          </div>
-                          
-                          <div className="flex gap-1 ml-2">
-                            {/* Translation Toggle */}
-                            {recipe.translated_urdu && (
-                              <Button
-                                onClick={() => toggleTranslation(recipe.id)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                title={isTranslated ? "Show English" : "Show Urdu"}
-                              >
-                                <Globe className="w-4 h-4" />
-                              </Button>
-                            )}
-                            
-                            {/* Delete Button */}
-                            <Button
-                              onClick={() => {
-                                if (window.confirm('Are you sure you want to delete this recipe?')) {
-                                  deleteRecipe(recipe.id);
-                                }
-                              }}
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              title="Delete recipe"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Recipe Content */}
-                        <div className={`space-y-4 ${isTranslated ? 'rtl' : ''}`}>
-                          {/* Ingredients */}
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Utensils className="w-4 h-4 text-green-500" />
-                              <h4 className={`font-semibold text-slate-700 dark:text-slate-300 ${isTranslated ? 'font-urdu' : ''}`}>
-                                {isTranslated ? 'اجزاء' : 'Ingredients'}
-                              </h4>
-                              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
-                                {recipe.ingredients.length}
-                              </span>
-                            </div>
-                            <div className="bg-green-50/50 dark:bg-green-900/10 rounded-lg p-3 max-h-32 overflow-y-auto">
-                              <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                                {recipe.ingredients.slice(0, 4).map((ingredient, i) => (
-                                  <li key={i} className={`flex items-start ${isTranslated ? 'text-right font-urdu' : ''}`}>
-                                    <span className="text-green-500 mr-2 flex-shrink-0">•</span>
-                                    <span className="truncate">{ingredient}</span>
-                                  </li>
-                                ))}
-                                {recipe.ingredients.length > 4 && (
-                                  <li className="text-slate-500 italic text-xs">
-                                    +{recipe.ingredients.length - 4} more...
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          </div>
-
-                          {/* Steps Preview */}
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Clock className="w-4 h-4 text-blue-500" />
-                              <h4 className={`font-semibold text-slate-700 dark:text-slate-300 ${isTranslated ? 'font-urdu' : ''}`}>
-                                {isTranslated ? 'ہدایات' : 'Instructions'}
-                              </h4>
-                              <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
-                                {recipe.steps.length} steps
-                              </span>
-                            </div>
-                            <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-lg p-3 max-h-32 overflow-y-auto">
-                              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                                {recipe.steps.slice(0, 2).map((step, i) => (
-                                  <div key={i} className={`flex items-start ${isTranslated ? 'text-right font-urdu' : ''}`}>
-                                    <span className="text-blue-500 mr-2 flex-shrink-0 font-medium">{i + 1}.</span>
-                                    <span className="line-clamp-2">{step}</span>
-                                  </div>
-                                ))}
-                                {recipe.steps.length > 2 && (
-                                  <div className="text-slate-500 italic text-xs">
-                                    +{recipe.steps.length - 2} more steps...
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                          <span>
-                            Saved {new Date(recipe.created_at).toLocaleDateString()}
-                          </span>
-                          {recipe.translated_urdu && (
-                            <div className="flex items-center gap-1">
-                              <Languages className="w-3 h-3" />
-                              <span>Urdu</span>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
-        )}
+        );
+      })}
+    </AnimatePresence>
+  </div>
+)}
       </div>
     </div>
   );
