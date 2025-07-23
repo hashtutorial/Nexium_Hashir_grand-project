@@ -241,6 +241,153 @@ export default function Home() {
         </div>
       </section>
 
+
+
+      {/* Video Demo Section - Add this after Hero section, before EnhancedFeaturesWithHover */}
+<section className="relative px-8 py-24 bg-gradient-to-b from-background via-orange-50/30 to-background dark:via-orange-950/20">
+  <div className="max-w-6xl mx-auto">
+    <div className="text-center mb-16">
+      <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
+        <Globe className="w-4 h-4 mr-2" />
+        See ChefGPT in Action
+      </div>
+      <h3 className="text-4xl lg:text-5xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">
+        Watch the Magic Happen
+      </h3>
+      <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+        From ingredient input to personalized recipe with Urdu translation in under 30 seconds. 
+        See how our AI understands your taste preferences and creates the perfect dish.
+      </p>
+    </div>
+
+{/* Video Container */}
+<div className="relative group cursor-pointer">
+  {/* Background Effects */}
+  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-orange-500/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500 animate-pulse" />
+  
+  {/* Video Frame */}
+  <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl p-4 shadow-2xl border border-white/30 group-hover:shadow-3xl transition-all duration-500 transform group-hover:scale-[1.02]">
+    
+    {/* Video Element */}
+    <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-inner">
+      <video
+        className="w-full h-full object-cover"
+        controls
+        poster="/icons/Thumbnail.png"
+        preload="metadata"
+        onError={(e) => {
+          console.error('Video failed to load:', e);
+        }}
+        onLoadStart={() => console.log('Video loading started')}
+        onCanPlay={() => console.log('Video can play')}
+        onLoadedData={() => console.log('Video data loaded')}
+        onLoadedMetadata={() => console.log('Video metadata loaded')}
+      >
+        {/* Try multiple sources with proper MIME types */}
+        <source src="/videos/Loom Message - 23 July 2025.mp4" type="video/mp4" />
+        <source src="/videos/Loom Message - 23 July 2025.webm" type="video/webm" />
+        <source src="/videos/Loom%20Message%20-%2023%20July%202025.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* Error Message Overlay */}
+      <div className="video-error absolute inset-0 flex items-center justify-center bg-gray-900/90 text-white text-center p-6 rounded-2xl" style={{display: 'none'}}>
+        <div>
+          <div className="text-red-400 mb-2">
+            <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+            </svg>
+          </div>
+          <p className="text-lg font-semibold mb-1">Video Not Available</p>
+          <p className="text-sm text-gray-300">The video file could not be loaded. Please check the file path.</p>
+        </div>
+      </div>
+      
+      {/* Custom Play Button Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+          <svg className="w-8 h-8 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    {/* Video Info */}
+    <div className="flex items-center justify-between mt-6 px-2">
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          <span>Live Demo</span>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          2:30 mins
+        </div>
+      </div>
+      
+      {/* Video Stats */}
+      <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+        <div className="flex items-center space-x-1">
+          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+          <span>4.9</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+          </svg>
+          <span>12K views</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      {/* Floating Feature Highlights */}
+      <div className="absolute -left-6 top-1/4 bg-white dark:bg-gray-800 rounded-full px-4 py-2 shadow-lg border animate-float hidden lg:block">
+        <div className="flex items-center space-x-2 text-sm font-medium">
+          <Languages className="w-4 h-4 text-blue-500" />
+          <span>Urdu Translation</span>
+        </div>
+      </div>
+      
+      <div className="absolute -right-6 top-3/4 bg-white dark:bg-gray-800 rounded-full px-4 py-2 shadow-lg border animate-float animation-delay-1000 hidden lg:block">
+        <div className="flex items-center space-x-2 text-sm font-medium">
+          <Sparkles className="w-4 h-4 text-purple-500" />
+          <span>AI Magic</span>
+        </div>
+      </div>
+    </div>
+
+       {/* Quick Features Below Video */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+      <div className="text-center p-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-6 h-6 text-white" />
+        </div>
+        <h4 className="font-bold text-lg mb-2">Instant Results</h4>
+        <p className="text-sm text-muted-foreground">Get personalized recipes in seconds, not minutes</p>
+      </div>
+      
+      <div className="text-center p-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Brain className="w-6 h-6 text-white" />
+        </div>
+        <h4 className="font-bold text-lg mb-2">Smart AI</h4>
+        <p className="text-sm text-muted-foreground">Understands Pakistani taste preferences perfectly</p>
+      </div>
+      
+      <div className="text-center p-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Globe className="w-6 h-6 text-white" />
+        </div>
+        <h4 className="font-bold text-lg mb-2">Dual Language</h4>
+        <p className="text-sm text-muted-foreground">Every recipe available in English and Urdu</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
       {/* Enhanced Features Section */}
       <EnhancedFeaturesWithHover />
 
