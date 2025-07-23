@@ -1,13 +1,90 @@
 'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
-import { ChefHat, Languages, Sparkles, ShoppingCart, HeartPulse, Star, Zap, Globe, Brain } from 'lucide-react';
-import { Card } from "@/components/ui/card";
+import { ChefHat, Languages, Sparkles, ShoppingCart, HeartPulse, Star, Zap, Globe, Shuffle,Brain,CheckCircle,Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+function EnhancedFeaturesWithHover() {
+  return (
+    <section className="relative px-8 py-20 bg-gradient-to-b from-background to-muted/30">
+        <div className="text-center mb-20">
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 text-sm font-medium mb-6">
+          <Target className="w-4 h-4 mr-2" />
+          Why ChefGPT is Different
+        </div>
+        <h2 className="text-5xl font-black mb-6 bg-gradient-to-r from-orange-500 to-green-600 bg-clip-text text-transparent">
+          Features That Actually Matter
+        </h2>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          Built specifically for individual culinary preferences and taste, our AI understands your culture, language, and taste preferences like no other platform.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <FeatureCard
+          icon={<ChefHat className="h-8 w-8" />}
+          title="Smart Recipes"
+          description="Get AI-curated recipes based on your preferences and available ingredients."
+          gradient="from-orange-500 to-red-500"
+          delay="0"
+          benefits={["Smart pantry option", "Preference-based filtering", "Serving size provisioning"]}
+        />
+        <FeatureCard
+          icon={<Languages className="h-8 w-8" />}
+          title="Urdu Translation"
+          description="Every recipe is beautifully translated into Urdu with proper cooking terminology and cultural context."
+          gradient="from-blue-500 to-purple-500"
+          delay="200"
+          benefits={["Native cooking terminology", "Cultural context preserved", "Toggle between languages"]}
+        />
+        <FeatureCard
+          icon={<Sparkles className="h-8 w-8" />}
+          title="Fusion Mode"
+          description="Create innovative fusion dishes by mixing Pakistani flavors with international cuisines."
+          gradient="from-purple-500 to-pink-500"
+          delay="400"
+          benefits={["Smart flavor pairing", "Cultural fusion logic", "User defined fusion recipes"]}
+        />
+        <FeatureCard
+          icon={<ShoppingCart className="h-8 w-8" />}
+          title="Smart Grocery List"
+          description="Auto-generate optimized shopping list based on missing input ingredients."
+          gradient="from-green-500 to-teal-500"
+          delay="600"
+          benefits={["Missing ingredient detection", "Local market prices", "Ingredient checklist"]}
+        />
+        <FeatureCard
+          icon={<HeartPulse className="h-8 w-8" />}
+          title="Nutritional Intelligence"
+          description="Get detailed nutritional analysis with calorie count and nutrient value."
+          gradient="from-red-500 to-orange-500"
+          delay="800"
+          benefits={["Caloric value", "Dietary awareness", "Portion planning"]}
+        />
+         <FeatureCard
+          icon={<Shuffle className="h-8 w-8" />}
+          title="Surprise Me!"
+          description="Don't know what to cook? Let our AI surprise you with a random recipe based on your preferences and fusion choice."
+          gradient="from-pink-500 to-rose-500"
+          delay="1200"
+          benefits={["Random recipe discovery", "Seasonal ingredient focus", "Adventure cooking mode"]}
+        />
+      </div>
+    </section>
+  );
+}
+
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  gradient: string;
+  delay: string;
+  benefits?: string[];
+}
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,7 +122,7 @@ export default function Home() {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
-
+  
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
       {/* Animated Background */}
@@ -165,61 +242,8 @@ export default function Home() {
       </section>
 
       {/* Enhanced Features Section */}
-      <section className="relative px-8 py-20 bg-gradient-to-b from-background to-muted/30">
-        <div className="text-center mb-16">
-          <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-orange-500 to-green-600 bg-clip-text text-transparent">
-            Powerful Features
-          </h3>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Experience the future of cooking with our AI-powered features designed for Pakistani food lovers
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          <FeatureCard
-            icon={<ChefHat className="h-8 w-8" />}
-            title="Smart Recipes"
-            description="Get AI-curated recipes based on your preferences and available ingredients with smart substitutions."
-            gradient="from-orange-500 to-red-500"
-            delay="0"
-          />
-          <FeatureCard
-            icon={<Languages className="h-8 w-8" />}
-            title="Urdu Translation"
-            description="Every recipe is beautifully translated into Urdu with proper cooking terminology and cultural context."
-            gradient="from-blue-500 to-purple-500"
-            delay="200"
-          />
-          <FeatureCard
-            icon={<Sparkles className="h-8 w-8" />}
-            title="Fusion Mode"
-            description="Create innovative fusion dishes by mixing Pakistani flavors with international cuisines."
-            gradient="from-purple-500 to-pink-500"
-            delay="400"
-          />
-          <FeatureCard
-            icon={<ShoppingCart className="h-8 w-8" />}
-            title="Smart Grocery List"
-            description="Auto-generate optimized shopping list based on missing input ingredients."
-            gradient="from-green-500 to-teal-500"
-            delay="600"
-          />
-          <FeatureCard
-            icon={<HeartPulse className="h-8 w-8" />}
-            title="Nutritional Intelligence"
-            description="Get detailed nutritional analysis with Pakistani dietary considerations and health insights."
-            gradient="from-red-500 to-orange-500"
-            delay="800"
-          />
-          <FeatureCard
-            icon={<Brain className="h-8 w-8" />}
-            title="Learning AI"
-            description="Our AI learns your taste preferences and dietary restrictions to suggest better recipes over time."
-            gradient="from-indigo-500 to-blue-500"
-            delay="1000"
-          />
-        </div>
-      </section>
+      <EnhancedFeaturesWithHover />
+
 
       {/* Testimonials */}
       <section className="relative px-8 py-20 bg-gradient-to-r from-orange-50/50 to-green-50/50 dark:from-orange-950/20 dark:to-green-950/20">
@@ -366,37 +390,52 @@ export default function Home() {
   );
 }
 
-function FeatureCard({ 
-  icon, 
-  title, 
-  description, 
-  gradient, 
-  delay 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  gradient: string;
-  delay: string;
-}) {
+function FeatureCard({ icon, title, description, gradient, delay, benefits }: FeatureCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
   return (
     <div 
-      className={`group relative p-8 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 animate-slide-up`}
+      className="group relative p-8 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl border border-white/30 hover:border-white/60 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-2xl bg-gradient-to-r from-orange-500 to-green-500" />
+      <div className="absolute inset-0  opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-3xl bg-gradient-to-r from-orange-500 to-green-500" />
       
-      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${gradient} text-white mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+      <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${gradient} text-white mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
         {icon}
       </div>
       
-      <h4 className="font-bold text-2xl mb-4 text-foreground group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+      <h4 className="font-black text-2xl mb-4 text-foreground group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
         {title}
       </h4>
       
-      <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-300">
+      <p className="text-muted-foreground leading-relaxed mb-6 group-hover:text-foreground transition-colors duration-300">
         {description}
       </p>
+      
+      {isHovered && benefits && (
+        <div className="space-y-2 animate-fadeIn">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="flex items-center space-x-2 text-sm text-green-600 dark:text-green-400">
+              <CheckCircle className="w-4 h-4" />
+              <span>{benefit}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
+
