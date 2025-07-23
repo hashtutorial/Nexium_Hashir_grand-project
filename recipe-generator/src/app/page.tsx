@@ -283,10 +283,7 @@ export default function Home() {
         onLoadedData={() => console.log('Video data loaded')}
         onLoadedMetadata={() => console.log('Video metadata loaded')}
       >
-        {/* Try multiple sources with proper MIME types */}
-        <source src="/videos/Loom Message - 23 July 2025.mp4" type="video/mp4" />
         <source src="/videos/Loom Message - 23 July 2025.webm" type="video/webm" />
-        <source src="/videos/Loom%20Message%20-%2023%20July%202025.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       
