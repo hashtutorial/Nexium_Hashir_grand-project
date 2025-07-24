@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       content: input
     };
 
-    const webhookRes = await fetch('https://hashir123.app.n8n.cloud/webhook/summarize-blog', {
+    const webhookRes = await fetch('http://localhost:5678/webhook/recipe-generator', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
