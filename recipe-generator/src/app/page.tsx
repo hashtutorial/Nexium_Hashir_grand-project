@@ -187,13 +187,13 @@ export default function Home() {
             <Link href="/signup">
               <Button size="lg" className="cursor-pointer bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-8">
                 <Zap className="w-5 h-5 mr-2" />
-                Get Started Free
+                Sign up for Free
               </Button>
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="cursor-pointer border-2 hover:bg-orange-50 dark:hover:bg-orange-950/50 hover:border-orange-300 transition-all duration-300 px-8">
                 <Globe className="w-5 h-5 mr-2" />
-                Try Demo
+                Try Demo here
               </Button>
             </Link>
           </div>
