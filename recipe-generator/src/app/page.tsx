@@ -243,7 +243,7 @@ export default function Home() {
 
 
 
-      {/* Video Demo Section - Add this after Hero section, before EnhancedFeaturesWithHover */}
+      {/* Video Demo Section */}
 <section className="relative px-8 py-24 bg-gradient-to-b from-background via-orange-50/30 to-background dark:via-orange-950/20">
   <div className="max-w-6xl mx-auto">
     <div className="text-center mb-16">
@@ -251,7 +251,7 @@ export default function Home() {
         <Globe className="w-4 h-4 mr-2" />
         See ChefGPT in Action
       </div>
-      <h3 className="text-4xl lg:text-5xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">
+      <h3 className=" text-4xl lg:text-5xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent pb-7">
         Watch the Magic Happen
       </h3>
       <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
