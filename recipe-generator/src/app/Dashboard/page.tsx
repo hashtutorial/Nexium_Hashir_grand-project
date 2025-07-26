@@ -847,7 +847,7 @@ const saveRecipeToDb = async (recipeText: string, recipeIndex: number) => {
             </motion.div>
           </div>
           <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Your AI-powered culinary companion that transforms your pantry into gourmet possibilities
+            Your AI-powered culinary companion that transforms your pantry into infinite gourmet possibilities
           </p>
         </motion.div>
 
