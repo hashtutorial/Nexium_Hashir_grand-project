@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       content: input
     };
 
-    const webhookRes = await fetch('http://localhost:5678/webhook/recipe-generator', {
+    const webhookRes = await fetch('https://l227753.app.n8n.cloud/webhook-test/chefgpt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
